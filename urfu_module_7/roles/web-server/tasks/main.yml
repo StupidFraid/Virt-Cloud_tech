@@ -1,0 +1,52 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for web-server
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: yes
+  
+
+- name: Check if default nginx configuration exists
+  ansible.builtin.stat:
+    path: /etc/nginx/sites-enabled/default
+  register: nginx_default_config
+
+- name: Remove default nginx configuration
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  when: nginx_default_config.stat.exists
+
+- name: Create html template server info file
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+  register: nginx_configured
+
+- name: Create new web site configuration
+  ansible.builtin.copy:
+    src: files/urfu.site.conf
+    dest: /etc/nginx/sites-available/web-server
+  when: nginx_configured.changed
+
+- name: Enable new web site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/web-server
+    dest: /etc/nginx/sites-enabled/web-server
+    state: link
+  when: nginx_configured.changed
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+  when: nginx_configured.changed
+
+- name: Check Running Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
