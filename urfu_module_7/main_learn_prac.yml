@@ -20,10 +20,19 @@
       - id_rsa.pub
       when: not key_stat.stat.exists
 
+    - name: Delete private key from the root folder
+      ansible.builtin.file:
+        path: "./urfu_keys/{{ item }}"
+        state: absent
+      loop:
+      - id_rsa
+      - id_rsa.pub
+      when: not key_stat.stat.exists
+
 
 - name: Deploy postgresql servers from the learning practice
   hosts: postgre
   become: yes
   roles:
-#     - pg-cluster
+    - pg-cluster
     - ssh-auth
