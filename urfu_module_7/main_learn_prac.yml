@@ -1,6 +1,29 @@
 ---
+- name: Generate ssh auth keys
+  hosts: localhost
+  tasks:
+    - name: Check if SSH key exists
+      ansible.builtin.stat:
+        path: ./roles/ssh-auth/files/id_rsa
+      register: key_stat
+
+    - name: Generate SSH key pair if not present
+      command: ssh-keygen -t rsa -b 2048 -f ./urfu_keys/id_rsa -q -N ""
+      when: not key_stat.stat.exists
+
+    - name: Copy private key to roles folder
+      ansible.builtin.copy:
+        src: "./urfu_keys/{{ item }}"
+        dest: "./roles/ssh-auth/files/{{ item }}"
+      loop:
+      - id_rsa
+      - id_rsa.pub
+      when: not key_stat.stat.exists
+
+
 - name: Deploy postgresql servers from the learning practice
   hosts: postgre
   become: yes
   roles:
-    - pg-cluster
+#     - pg-cluster
+    - ssh-auth

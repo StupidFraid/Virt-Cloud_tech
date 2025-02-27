@@ -1,0 +1,19 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for ssh-keys
+    - name: Add private  and public key to the remote host
+      ansible.builtin.copy: 
+        src: "{{ item }}"
+        dest: /home/urfu/.ssh/ 
+        mode: 0600
+        owner: urfu
+        group: urfu
+      with_items:
+        - id_rsa.pub
+        - id_rsa
+
+    - name: Add public key to the authorized_keys file
+      ansible.builtin.authorized_key:
+        user: urfu
+        key: "{{ lookup('file', 'roles/ssh-auth/files/id_rsa.pub') }}"
+        state: present
