@@ -1,5 +1,5 @@
 ---
-- name: Deploy web servers
+- name: Deploy web servers from the laboratory work
   hosts: webservers
   become: yes
   roles:

@@ -1,0 +1,37 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for pg-cluster
+- name: Add IP address of all hosts to all hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: "{{ hostvars[item].ansible_host }} {{item}}"
+    state: present
+  when: hostvars[item].ansible_host is defined
+  with_items: "{{ groups.postgre }}"
+
+- name: Install Apt Packages
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  register: install_packages
+
+- name: Change pass for the hacluster user
+  ansible.builtin.user:
+    name: hacluster
+    password: "{{ 'urfu' | password_hash('sha512') }}"
+  when: install_packages.changed
+
+### Need add tack create cluster pacemaker and corosync
+
+- name: Disable postgresql server
+  ansible.builtin.service:
+    name: postgresql
+    enabled: no
+    state: stopped
+
+- name: Rename default postgresql data directory
+  ansible.builtin.command:
+    cmd: mv /var/lib/postgresql/12/main /var/lib/postgresql/12/main.bak
+    creates: /var/lib/postgresql/12/main.bak

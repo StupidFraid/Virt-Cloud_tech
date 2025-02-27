@@ -1,0 +1,6 @@
+---
+- name: Deploy postgresql servers from the learning practice
+  hosts: postgre
+  become: yes
+  roles:
+    - pg-cluster
