@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for configure_vm
+- name: Change hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  when: ansible_hostname != inventory_hostname
+
+- name: Configure time zone
+  ansible.builtin.command:
+    cmd: "timedatectl set-timezone {{ timezone }}"
+  when: timezone is defined
+  changed_when: false

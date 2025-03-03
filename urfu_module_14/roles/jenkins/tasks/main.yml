@@ -1,0 +1,50 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for jenkins
+# - name: Add Jenkins Apt repository key
+#   ansible.builtin.apt_key:
+#     url: "{{ jenkins_debian_url_apt_key }}"
+#     state: present
+
+- name: Download Jenkins GPG key
+  ansible.builtin.get_url:
+    url: "{{ jenkins_debian_url_apt_key }}"
+    dest: /etc/apt/keyrings/jenkins.asc
+    mode: '0644'
+  when: jenkins_debian_url_apt_key != ''
+
+
+- name: Add Jenkins Apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/jenkins.asc] {{ jenkins_debian_url_apt_repo }}"
+    state: present
+    update_cache: true
+  when: jenkins_debian_url_apt_repo != ''
+
+- name: Install Jenkins
+  ansible.builtin.apt:
+    name:
+      - fontconfig
+      - openjdk-17-jre
+      - jenkins
+    state: present
+    update_cache: true
+
+- name: Check Running Nginx
+  ansible.builtin.service:
+    name: jenkins
+    state: started
+    enabled: true
+
+
+- name: Print Url Jenkins
+  ansible.builtin.debug:
+    msg: "Jenkins Practicum URL: http://{{ ansible_default_ipv4.address }}:8080"
+
+- name: Print initial admin password
+  ansible.builtin.shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+  register: jenkins_password
+
+- name: Print initial admin password
+  ansible.builtin.debug:
+    msg: "Jenkins Practicum Password: {{ jenkins_password.stdout }}"

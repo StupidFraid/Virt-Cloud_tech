@@ -1,0 +1,16 @@
+{% set ip_address = ansible_default_ipv4.address %}
+
+server {
+    listen       80;
+    server_name  {{ ip_address }};
+    
+
+    access_log /var/log/nginx/{{ ip_address }}_access_log;
+    error_log /var/log/nginx/{{ ip_address }}_error_log;
+
+    location /custom {
+        alias /usr/share/nginx/html/{{ ip_address }}/;
+        index index.html;
+        try_files $uri $uri/ =404;
+    } 
+}

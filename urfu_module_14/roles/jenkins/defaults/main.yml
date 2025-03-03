@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT-0
+---
+# defaults file for jenkins
+jenkins_debian_url_apt_key: "https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key"
+jenkins_debian_url_apt_repo: "https://pkg.jenkins.io/debian-stable binary/"

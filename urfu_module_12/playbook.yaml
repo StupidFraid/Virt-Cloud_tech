@@ -1,0 +1,16 @@
+---
+- hosts: redhat_servers
+  become: yes
+  roles:
+    - epel
+    - nginx
+  vars:
+    nginx_user: nginx
+    
+
+- hosts: debian_servers
+  become: yes
+  roles:
+    - nginx
+  vars:
+    nginx_user: root

@@ -1,0 +1,63 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for ./roles/nginx
+- name: Change hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  when: ansible_hostname != inventory_hostname
+
+- name: Install Nginx on RedHat
+  dnf:
+    name: nginx
+    state: present
+  when: ansible_os_family == 'RedHat'
+  notify:
+    - nginx-restart
+
+- name: Install Nginx on Debian 
+  apt:
+    name: nginx
+    state: present
+  when: ansible_os_family == 'Debian'
+  notify:
+    - nginx-restart
+
+- name: Replace default config nginx from template
+  ansible.builtin.template:
+    src: ./templates/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    backup: yes
+  notify:
+    - nginx-restart
+
+- name: Check if default nginx configuration exists
+  ansible.builtin.stat:
+    path: /etc/nginx/sites-enabled/default
+  register: nginx_default_config
+
+- name: Remove default nginx configuration
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  when: nginx_default_config.stat.exists
+  notify:
+    - nginx-restart
+
+- name: Create home directory for web site
+  ansible.builtin.file:
+    path: /usr/share/nginx/html/{{ ansible_default_ipv4.address }}
+    state: directory
+
+- name: Create html template server info file
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /usr/share/nginx/html/{{ ansible_default_ipv4.address }}/index.html
+  register: nginx_configured
+
+- name: Create new web site configuration RedHat
+  ansible.builtin.template:
+    src: ./templates/site_conf.conf.j2
+    dest: /etc/nginx/conf.d/{{ ansible_default_ipv4.address }}.conf
+  when: nginx_configured.changed
+  notify:
+    - nginx-restart

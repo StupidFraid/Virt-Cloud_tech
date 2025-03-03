@@ -1,0 +1,7 @@
+---
+- name: Configuration new WM and install Jenkins
+  hosts: jenkins
+  become: true
+  roles:
+    - configure_vm
+    - jenkins
