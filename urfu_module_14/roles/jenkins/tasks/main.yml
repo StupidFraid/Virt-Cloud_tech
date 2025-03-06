@@ -30,7 +30,7 @@
     state: present
     update_cache: true
 
-- name: Check Running Nginx
+- name: Check Running Jenkins
   ansible.builtin.service:
     name: jenkins
     state: started

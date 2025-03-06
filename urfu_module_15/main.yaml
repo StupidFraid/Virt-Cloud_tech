@@ -1,0 +1,7 @@
+---
+- name: Configuration new WM and install Docker-CE
+  hosts: docker
+  become: true
+  roles:
+    - configure_vm
+    - docker

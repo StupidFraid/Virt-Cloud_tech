@@ -1,0 +1,47 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for Docker
+
+- name: Download docker GPG key
+  ansible.builtin.get_url:
+    url: "{{ docker_debian_url_apt_key }}"
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+  when: docker_debian_url_apt_key != ''
+
+
+- name: Add docker Apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [aarch=amd64 signed-by=/etc/apt/keyrings/docker.asc] {{ docker_debian_url_apt_repo }}"
+    state: present
+    update_cache: true
+  when: docker_debian_url_apt_repo != ''
+
+- name: Install docker
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - "containerd.io"
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+
+- name: Check Running Docker
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+
+- name: Add group
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add user to group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
